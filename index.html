@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Muhammad Afzaal — Azure Cloud &amp; Infrastructure</title>
+<meta name="description" content="Muhammad Afzaal builds and troubleshoots Azure infrastructure — networking, compute, storage and identity. Based in Brooklyn, New York.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0D1522;
+  --ink-2:#121C2C;
+  --line:#22304A;
+  --line-soft:#1A2437;
+  --text:#E8EDF5;
+  --muted:#8FA0BA;
+  --accent:#4CC2FF;
+  --accent-dim:#2A7FB8;
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --pad:clamp(1.25rem,5vw,4rem);
+  --maxw:1120px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 2rem);-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--ink);color:var(--text);
+  font-family:var(--body);font-size:17px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding-inline:var(--pad)}
+
+/* ---------- masthead ---------- */
+.masthead{
+  position:sticky;top:0;z-index:20;
+  top:env(safe-area-inset-top,0px);
+  background:rgba(13,21,34,.82);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line-soft);
+}
+.masthead .wrap{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:.85rem}
+.mark{font-family:var(--display);font-weight:600;font-size:.95rem;letter-spacing:-.01em;color:var(--text)}
+.mark:hover{text-decoration:none}
+.mark span{color:var(--accent)}
+.navlinks{display:flex;gap:1.4rem;font-size:.9rem}
+.navlinks a{color:var(--muted)}
+.navlinks a:hover{color:var(--text);text-decoration:none}
+@media(max-width:640px){.navlinks{display:none}}
+
+/* ---------- hero ---------- */
+.hero{padding-block:clamp(3rem,9vw,6rem) clamp(2.5rem,7vw,4.5rem)}
+.hero .wrap{
+  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
+  gap:clamp(2rem,5vw,4rem);align-items:center;
+}
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr}}
+
+.role{
+  font-family:var(--body);font-size:.92rem;color:var(--accent);
+  margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem;
+}
+.role::before{content:"";width:28px;height:1px;background:var(--accent);flex:none}
+
+h1{
+  font-family:var(--display);font-weight:700;
+  font-size:clamp(2.4rem,6.2vw,3.9rem);line-height:1.04;
+  letter-spacing:-.03em;margin:0 0 1.1rem;
+}
+.lede{font-size:clamp(1.02rem,2.2vw,1.18rem);color:var(--muted);margin:0 0 2rem;max-width:46ch}
+.lede strong{color:var(--text);font-weight:500}
+
+.actions{display:flex;flex-wrap:wrap;gap:.7rem}
+.btn{
+  font-family:var(--body);font-size:.95rem;font-weight:500;
+  padding:.72rem 1.3rem;border-radius:3px;border:1px solid var(--line);
+  color:var(--text);background:transparent;transition:border-color .18s,background .18s,color .18s;
+}
+.btn:hover{text-decoration:none;border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#06121E;font-weight:600}
+.btn-primary:hover{background:#6ACEFF;border-color:#6ACEFF;color:#06121E}
+
+/* ---------- topology ---------- */
+.topo{width:100%;height:auto;display:block;overflow:visible}
+.topo text{font-family:var(--body);font-size:9.5px;fill:var(--muted);letter-spacing:.01em}
+.topo .zone{fill:none;stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
+.topo .zlabel{fill:#6C7C95;font-size:8.5px}
+.topo .node{fill:var(--ink-2);stroke:var(--accent-dim);stroke-width:1.1}
+.topo .node-key{fill:#0A2A3F;stroke:var(--accent);stroke-width:1.3}
+.topo .edge{stroke:var(--line);stroke-width:1;fill:none}
+.topo .flow{stroke:var(--accent);stroke-width:1.4;fill:none;opacity:.9}
+.topo-cap{
+  margin:1rem 0 0;font-size:.8rem;color:#6C7C95;
+  border-left:1px solid var(--line);padding-left:.75rem;line-height:1.5;
+}
+
+@media(prefers-reduced-motion:no-preference){
+  .topo .edge{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw 1.1s ease forwards}
+  .topo .node,.topo .node-key,.topo text{opacity:0;animation:fade .5s ease forwards}
+  .topo .flow{stroke-dasharray:14 260;stroke-dashoffset:274;animation:packet 3.2s linear 1.5s infinite}
+}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fade{to{opacity:1}}
+@keyframes packet{to{stroke-dashoffset:0}}
+
+/* ---------- sections ---------- */
+section{padding-block:clamp(3rem,7vw,5rem)}
+.bordered{border-top:1px solid var(--line-soft)}
+h2{
+  font-family:var(--display);font-weight:600;
+  font-size:clamp(1.45rem,3.4vw,1.95rem);letter-spacing:-.02em;
+  margin:0 0 .5rem;
+}
+.sub{color:var(--muted);margin:0 0 2.5rem;max-width:56ch;font-size:1rem}
+
+/* about */
+.about{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:clamp(2rem,5vw,4rem)}
+@media(max-width:860px){.about{grid-template-columns:1fr}}
+.about p{margin:0 0 1.1rem;max-width:62ch}
+.about p:last-child{margin-bottom:0}
+.facts{border-left:1px solid var(--line);padding-left:1.4rem;align-self:start}
+.fact{margin-bottom:1.35rem}
+.fact:last-child{margin-bottom:0}
+.fact dt{font-size:.78rem;color:#6C7C95;margin-bottom:.2rem}
+.fact dd{margin:0;font-family:var(--display);font-weight:500;font-size:1.02rem;line-height:1.35}
+
+/* projects */
+.proj{
+  display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
+  gap:clamp(1.25rem,4vw,3rem);
+  padding-block:2.1rem;border-top:1px solid var(--line-soft);
+}
+.proj:last-of-type{border-bottom:1px solid var(--line-soft)}
+@media(max-width:760px){.proj{grid-template-columns:1fr;gap:1.1rem}}
+.proj h3{font-family:var(--display);font-weight:600;font-size:1.22rem;letter-spacing:-.015em;margin:0 0 .6rem;line-height:1.3}
+.proj p{margin:0 0 1rem;color:var(--muted);max-width:62ch}
+.proj p:last-of-type{margin-bottom:0}
+.proj .built{color:var(--text)}
+.stack{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 1.1rem;padding:0;list-style:none}
+.stack li{
+  font-size:.79rem;color:var(--muted);
+  border:1px solid var(--line-soft);border-radius:2px;padding:.18rem .5rem;
+}
+.repo{font-size:.92rem;font-weight:500}
+
+/* skills */
+.skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:2rem 2.5rem}
+.skills h3{font-family:var(--display);font-weight:500;font-size:.93rem;color:var(--accent);margin:0 0 .7rem;padding-bottom:.55rem;border-bottom:1px solid var(--line-soft)}
+.skills ul{margin:0;padding:0;list-style:none;color:var(--muted);font-size:.93rem;line-height:1.95}
+
+/* experience */
+.job{display:grid;grid-template-columns:150px minmax(0,1fr);gap:clamp(1rem,3vw,2.5rem)}
+@media(max-width:700px){.job{grid-template-columns:1fr;gap:.5rem}}
+.job-when{font-size:.88rem;color:#6C7C95;padding-top:.3rem}
+.job h3{font-family:var(--display);font-weight:600;font-size:1.15rem;margin:0 0 .15rem;letter-spacing:-.01em}
+.job .where{color:var(--muted);font-size:.93rem;margin:0 0 1.1rem}
+.job ul{margin:0;padding:0;list-style:none;max-width:64ch}
+.job li{position:relative;padding-left:1.1rem;margin-bottom:.75rem;color:var(--muted)}
+.job li:last-child{margin-bottom:0}
+.job li::before{content:"";position:absolute;left:0;top:.68em;width:5px;height:1px;background:var(--accent-dim)}
+
+/* credentials */
+.creds{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:clamp(2rem,5vw,4rem)}
+@media(max-width:760px){.creds{grid-template-columns:1fr}}
+.creds h3{font-family:var(--display);font-weight:500;font-size:.93rem;color:var(--accent);margin:0 0 1rem;padding-bottom:.55rem;border-bottom:1px solid var(--line-soft)}
+.certlist{margin:0;padding:0;list-style:none}
+.certlist li{display:flex;justify-content:space-between;gap:1rem;padding:.6rem 0;border-bottom:1px solid var(--line-soft);font-size:.95rem}
+.certlist li:last-child{border-bottom:0}
+.certlist .issuer{color:#6C7C95;font-size:.83rem;white-space:nowrap;align-self:center}
+.certlist .wip{color:var(--accent);font-size:.83rem;white-space:nowrap;align-self:center}
+.edu{margin-bottom:1.6rem}
+.edu:last-child{margin-bottom:0}
+.edu .deg{font-family:var(--display);font-weight:500;font-size:1rem;margin:0 0 .15rem;line-height:1.4}
+.edu .school{color:var(--muted);font-size:.9rem;margin:0}
+
+/* contact */
+.contact{text-align:left;max-width:52ch}
+.contact h2{margin-bottom:.9rem}
+.contact p{color:var(--muted);margin:0 0 1.8rem}
+footer{border-top:1px solid var(--line-soft);padding-block:1.6rem;color:#5E6E86;font-size:.84rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;justify-content:space-between}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="mark" href="#top">Muhammad Afzaal<span>.</span></a>
+    <nav class="navlinks">
+      <a href="#work">Projects</a>
+      <a href="#skills">Skills</a>
+      <a href="#experience">Experience</a>
+      <a href="#credentials">Credentials</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="role">Azure cloud &amp; infrastructure · Brooklyn, NY</p>
+      <h1>I build the network, then break it to find out why.</h1>
+      <p class="lede">IT professional working across <strong>Azure networking, compute, storage and identity</strong>. Three infrastructure builds documented end to end — including the failures and what fixed them.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="https://www.muhammadafzaal.com/resume.pdf">View Resume</a>
+        <a class="btn" href="#work">See the builds</a>
+        <a class="btn" href="https://www.linkedin.com/in/muhammad-afzaal-cloud/">LinkedIn</a>
+        <a class="btn" href="https://github.com/Afzaal-1">GitHub</a>
+      </div>
+    </div>
+
+    <div>
+      <svg class="topo" viewBox="0 0 400 290" role="img" aria-label="Diagram of a segmented Azure network: two peered virtual networks with web, API and database subnets behind a load balancer, with Bastion and NAT Gateway.">
+        <!-- VNet A -->
+        <rect class="zone" x="8" y="26" width="196" height="166" rx="4"/>
+        <text class="zlabel" x="16" y="42">vnet-hub · 10.0.0.0/16</text>
+        <!-- VNet B -->
+        <rect class="zone" x="224" y="70" width="168" height="122" rx="4"/>
+        <text class="zlabel" x="232" y="86">vnet-spoke · 10.1.0.0/16</text>
+
+        <!-- edges -->
+        <path class="edge" style="--len:40"  d="M74 76 L74 104"/>
+        <path class="edge" style="--len:40"  d="M74 128 L74 156"/>
+        <path class="edge" style="--len:130" d="M204 112 L224 112"/>
+        <path class="edge" style="--len:80"  d="M160 112 L204 112"/>
+        <path class="edge" style="--len:60"  d="M74 112 L124 112"/>
+        <path class="edge" style="--len:70"  d="M290 128 L290 156"/>
+        <path class="edge" style="--len:80"  d="M40 232 L40 196"/>
+        <path class="edge" style="--len:90"  d="M330 232 L330 196"/>
+
+        <!-- animated request path: internet -> LB -> web -> api -> db -->
+        <path class="flow" d="M74 46 L74 64 L74 112 L124 112 L204 112 L290 112 L290 156"/>
+
+        <!-- nodes: VNet A -->
+        <rect class="node-key" x="52" y="52" width="44" height="24" rx="3"/>
+        <text x="74" y="67" text-anchor="middle" fill="#E8EDF5">LB</text>
+
+        <rect class="node" x="46" y="100" width="56" height="24" rx="3"/>
+        <text x="74" y="115" text-anchor="middle">web</text>
+
+        <rect class="node" x="46" y="152" width="56" height="24" rx="3"/>
+        <text x="74" y="167" text-anchor="middle">bastion</text>
+
+        <rect class="node" x="124" y="100" width="36" height="24" rx="3"/>
+        <text x="142" y="115" text-anchor="middle">nsg</text>
+
+        <!-- peering marker -->
+        <circle class="node-key" cx="214" cy="112" r="5"/>
+        <text x="214" y="98" text-anchor="middle" class="zlabel">peer</text>
+
+        <!-- nodes: VNet B -->
+        <rect class="node" x="262" y="100" width="56" height="24" rx="3"/>
+        <text x="290" y="115" text-anchor="middle">api</text>
+
+        <rect class="node" x="262" y="152" width="56" height="24" rx="3"/>
+        <text x="290" y="167" text-anchor="middle">db</text>
+
+        <!-- bottom -->
+        <rect class="node" x="12" y="232" width="56" height="24" rx="3"/>
+        <text x="40" y="247" text-anchor="middle">nat gw</text>
+
+        <rect class="node" x="302" y="232" width="56" height="24" rx="3"/>
+        <text x="330" y="247" text-anchor="middle">monitor</text>
+
+        <text x="74" y="20" text-anchor="middle" class="zlabel">inbound</text>
+      </svg>
+      <p class="topo-cap">Segmented network build: peered virtual networks, tiered subnets, load balancer, Bastion and NAT Gateway.</p>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="bordered">
+  <div class="wrap about">
+    <div>
+      <h2>About</h2>
+      <p>I came into IT through an associate degree in IT support, then a B.S. in Information Technology while working through certifications on my own time. Most of what I know about Azure I learned by building things, watching them fail, and working out why.</p>
+      <p>That's not a figure of speech. On one build, an App Service deployment kept failing with nothing useful in the error output. I went through PowerShell debug logs until I found it was hitting a regional tier quota — then fixed it and wrote it down. The failures are in the repositories alongside the working configurations, because that's the part that actually taught me something.</p>
+      <p>Alongside the lab work, I've run real client infrastructure: provisioning Azure VMs for a live workload, setting up snapshots and a recovery VM, hosting a site on App Service, and handling domains, DNS and business email — while being the only technical person my client had to call.</p>
+    </div>
+    <dl class="facts">
+      <div class="fact">
+        <dt>Currently</dt>
+        <dd>Preparing for AZ-104,<br>Azure Administrator</dd>
+      </div>
+      <div class="fact">
+        <dt>Looking for</dt>
+        <dd>Cloud support, systems administration, junior cloud engineering</dd>
+      </div>
+      <div class="fact">
+        <dt>Based in</dt>
+        <dd>Brooklyn, New York</dd>
+      </div>
+      <div class="fact">
+        <dt>Certified</dt>
+        <dd>AZ-900 · AWS CCP<br>A+ · Network+ · Security+</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<section id="work" class="bordered">
+  <div class="wrap">
+    <h2>Infrastructure builds</h2>
+    <p class="sub">Three Azure environments built from scratch and documented on GitHub — configurations, troubleshooting steps, and what went wrong along the way.</p>
+
+    <article class="proj">
+      <div>
+        <h3>Segmented network infrastructure</h3>
+        <p class="built">Two peered virtual networks with private Ubuntu VMs across separate web, API and database subnets, subnet-level NSGs, Azure Bastion for secure access, a Standard public Load Balancer, Private DNS and NAT Gateway.</p>
+        <p>Diagnosed NSG priority conflicts, user-defined route misconfiguration and VNet peering failures using Network Watcher, curl and nc — tracing where traffic was actually being dropped rather than guessing.</p>
+      </div>
+      <div>
+        <ul class="stack">
+          <li>VNet peering</li><li>NSGs</li><li>UDRs</li><li>Bastion</li><li>Load Balancer</li><li>Private DNS</li><li>NAT Gateway</li><li>Network Watcher</li>
+        </ul>
+        <a class="repo" href="https://github.com/Afzaal-1/azure-segmented-network-infrastructure">View repository</a>
+      </div>
+    </article>
+
+    <article class="proj">
+      <div>
+        <h3>Multi-OS compute infrastructure</h3>
+        <p class="built">Ubuntu Linux and Windows Server virtual machines running Nginx and IIS, with managed disks, snapshots and Azure Monitor alerting for health and availability.</p>
+        <p>Configured persistent Linux storage with UUID and fstab so volumes remount correctly across reboots, and tested snapshot recovery rather than assuming it would work.</p>
+      </div>
+      <div>
+        <ul class="stack">
+          <li>Virtual Machines</li><li>Managed disks</li><li>Snapshots</li><li>Azure Monitor</li><li>Nginx</li><li>IIS</li><li>Windows Server</li><li>Ubuntu</li>
+        </ul>
+        <a class="repo" href="https://github.com/Afzaal-1/azure-multi-os-compute-infrastructure">View repository</a>
+      </div>
+    </article>
+
+    <article class="proj">
+      <div>
+        <h3>Storage and PowerShell automation</h3>
+        <p class="built">Blob Storage and Azure Files configured with enforced TLS, secure transfer and lifecycle management policies, plus PowerShell automation that generates short-lived user delegation SAS tokens for time-limited access.</p>
+        <p>Traced an App Service deployment failure through debug output and deployment logs to a regional F1 tier quota limit, then resolved it — the troubleshooting is documented in the repository.</p>
+      </div>
+      <div>
+        <ul class="stack">
+          <li>Blob Storage</li><li>Azure Files</li><li>SAS tokens</li><li>TLS enforcement</li><li>Lifecycle policies</li><li>Azure PowerShell</li><li>App Service</li>
+        </ul>
+        <a class="repo" href="https://github.com/Afzaal-1/azure-storage-powershell-lab">View repository</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="skills" class="bordered">
+  <div class="wrap">
+    <h2>Technical skills</h2>
+    <p class="sub">What I've actually configured, scripted or troubleshot — not a keyword list.</p>
+    <div class="skills">
+      <div>
+        <h3>Azure</h3>
+        <ul>
+          <li>Virtual Machines</li><li>VNets, subnets, peering</li><li>NSGs and route tables</li>
+          <li>Load Balancer, Bastion</li><li>Private DNS, NAT Gateway</li><li>Network Watcher</li>
+          <li>Blob Storage, Azure Files</li><li>Managed disks, snapshots</li><li>App Service</li>
+          <li>Entra ID, SAS tokens</li><li>Azure Monitor</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Systems &amp; scripting</h3>
+        <ul>
+          <li>Windows Server</li><li>Windows 10 / 11 support</li><li>Ubuntu Linux</li>
+          <li>PowerShell automation</li><li>Azure CLI</li><li>Bash</li>
+          <li>Nginx, IIS</li><li>MariaDB</li><li>Git and GitHub</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Networking</h3>
+        <ul>
+          <li>TCP/IP</li><li>DNS and DHCP</li><li>CIDR and subnetting</li>
+          <li>Routing</li><li>Ports and protocols</li><li>Connectivity troubleshooting</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Support</h3>
+        <ul>
+          <li>Client-facing technical support</li><li>DNS records and nameservers</li><li>Domain transfers</li>
+          <li>Business email administration</li><li>Web hosting</li><li>Technical documentation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="experience" class="bordered">
+  <div class="wrap">
+    <h2>Experience</h2>
+    <div class="job">
+      <div class="job-when">2024 — Present</div>
+      <div>
+        <h3>Freelance IT &amp; Cloud Support Specialist</h3>
+        <p class="where">Self-employed · Brooklyn, NY</p>
+        <ul>
+          <li>Provisioned and configured an Azure Windows virtual machine for a client business workload, sizing compute and storage against their actual performance and capacity needs.</li>
+          <li>Built a data protection setup using VM snapshots and a secondary virtual machine for recovery.</li>
+          <li>Deployed and hosted a client website on Azure App Service, keeping it publicly available and troubleshooting availability issues as they came up.</li>
+          <li>Managed web hosting, domain transfers, DNS records, nameservers and business email administration — including account access and permissions.</li>
+          <li>Worked directly with clients to gather requirements, resolve technical and account issues, and explain what was happening in language that made sense to them.</li>
+          <li>Set up and managed Google Ads campaigns, including account configuration and ongoing optimisation.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="credentials" class="bordered">
+  <div class="wrap">
+    <h2>Credentials</h2>
+    <div class="creds">
+      <div>
+        <h3>Certifications</h3>
+        <ul class="certlist">
+          <li><span>Azure Fundamentals (AZ-900)</span><span class="issuer">Microsoft</span></li>
+          <li><span>Azure Administrator (AZ-104)</span><span class="wip">In progress</span></li>
+          <li><span>AWS Certified Cloud Practitioner</span><span class="issuer">AWS</span></li>
+          <li><span>CompTIA Security+</span><span class="issuer">CompTIA</span></li>
+          <li><span>CompTIA Network+</span><span class="issuer">CompTIA</span></li>
+          <li><span>CompTIA A+</span><span class="issuer">CompTIA</span></li>
+          <li><span>ITIL Foundation</span><span class="issuer">ITIL</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Education</h3>
+        <div class="edu">
+          <p class="deg">B.S. Information Technology</p>
+          <p class="school">Western Governors University · 2026</p>
+        </div>
+        <div class="edu">
+          <p class="deg">A.A.S. Computer Information Systems<br>(IT Support)</p>
+          <p class="school">Oakland Community College · 2024</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="bordered">
+  <div class="wrap contact">
+    <h2>Get in touch</h2>
+    <p>I'm looking for roles in cloud support, infrastructure support, systems administration and junior cloud engineering — in New York or remote.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="mailto:ma@muhammadafzaal.com">ma@muhammadafzaal.com</a>
+      <a class="btn" href="https://www.linkedin.com/in/muhammad-afzaal-cloud/">LinkedIn</a>
+      <a class="btn" href="https://github.com/Afzaal-1">GitHub</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Muhammad Afzaal</span>
+    <span>Built and hosted on Microsoft Azure</span>
+  </div>
+</footer>
+
+</body>
+</html>
